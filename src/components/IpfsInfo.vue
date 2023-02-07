@@ -15,8 +15,9 @@
 </template>
 
 <script>
-const pipe = require('it-pipe')
-const PeerId = require('peer-id')
+import { pipe } from 'it-pipe'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { inject } from 'vue'
 
 export default {
   name: "IpfsInfo",
@@ -35,45 +36,20 @@ export default {
   },
   methods: {
     async startPubsub() {
-      this.libp2p = await this.$startLibp2p();
+      this.libp2p = await inject('startLibP2p')();
       window.libp2p = this.libp2p
-      this.id = this.libp2p.peerId.toB58String();
-      this.libp2p.pubsub.subscribe('news', (msg) => {
-        // console.log(`node1 received: ${msg.data.toString()}`)
-        this.messages.push(msg.data.toString());
+      this.id = await createEd25519PeerId()
+      console.log(this.id.toString())
+      this.libp2p.pubsub.addEventListener('message', (message) => {
+        this.messages.push(`${message.detail.topic}:`, new TextDecoder().decode(message.detail.data));
         var elem = document.getElementById('messages');
         elem.scrollTop = elem.scrollHeight;
       })
-      this.libp2p.handle('/protocool', ({ stream }) => {
-        pipe(
-          stream,
-          async (source) => {
-            for await (const msg of source) {
-              this.messages.push(msg.toString())
-            }
-          }
-        )
-      })
     },
     sendMessage () {
-      if (this.peer) {
-        console.log('enviando... ', this.peer)
-        this.sendDirectMessage(this.peer)
-      } else {
-        this.libp2p.pubsub.publish('news', this.message)
+        this.libp2p.pubsub.publish('ourNews', new TextEncoder().encode('this.message'))
         this.message = ''
-      }
-    },
-    async sendDirectMessage (target) {
-      console.log(this.libp2p.peerStore.peers.get(target));
-      let peer = this.libp2p.peerStore.peers.get(target);
-      const { stream } = await this.libp2p.dialProtocol(peer.id, '/protocool')
-      await pipe(
-        [this.message],
-        stream
-      )
     }
-
   }
 }
 </script>

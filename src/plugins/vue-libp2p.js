@@ -1,57 +1,58 @@
-const Libp2p = require('libp2p')
-const Websockets = require('libp2p-websockets')
-const WebRTC = require('libp2p-webrtc-star')
-const Mplex = require('libp2p-mplex')
-const SECIO = require('libp2p-secio')
-const Gossipsub = require('libp2p-gossipsub')
-const Bootstrap = require('libp2p-bootstrap')
-// const pipe = require('it-pipe')
+import { createLibp2p } from 'libp2p'
+import { webRTCStar } from '@libp2p/webrtc-star'
+import {noise} from "@chainsafe/libp2p-noise"
+import { gossipsub } from '@chainsafe/libp2p-gossipsub'
+
+const star = webRTCStar()
+const noiseEncryption = noise('test');
 
 const plugin = {
-  install(Vue, opts = {}) {
+  install: (app, options) => {
 
-    Vue.prototype.$startLibp2p = async function () {
-      const node = await Libp2p.create({
+    const startLibP2p = async function () {
+      const node = await createLibp2p({
         addresses: {
           listen: [
             '/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star',
             '/dns4/wrtc-star2.sjc.dwebops.pub/tcp/443/wss/p2p-webrtc-star'
           ]
         },
-        modules: {
-          transport: [Websockets, WebRTC],
-          streamMuxer: [Mplex],
-          connEncryption: [SECIO],
-          pubsub: Gossipsub
-        },
-        config: {
-          pubsub: {
-            enabled: true,
-            emitSelf: true
-          }
-        }
+        transports: [
+          star.transport
+        ],
+        peerDiscovery: [
+          star.discovery
+        ],
+        connectionEncryption: [
+          noiseEncryption
+        ],
+        pubsub: gossipsub({
+          emitSelf: true
+        })
       })
 
       // Listen for new peers
-      node.on('peer:discovery', (peerId) => {
-        console.log(`Found peer ${peerId.toB58String()}`)
+      node.addEventListener('peer:discovery', (peerId) => {
+        //console.log(`Found peer ${peerId.detail.id.toString()}`)
       })
 
       // Listen for new connections to peers
-      node.connectionManager.on('peer:connect', (connection) => {
+      node.addEventListener('peer:connect', (connection) => {
         // console.log(`Connected to ${connection.remotePeer.toB58String()}`)
-        console.log(`Connected to ${connection.remotePeer}`)
+        console.log(connection)
+        console.log(`Connected to ${connection}`)
       })
 
       // Listen for peers disconnecting
-      node.connectionManager.on('peer:disconnect', (connection) => {
-        console.log(`Disconnected from ${connection.remotePeer.toB58String()}`)
+      node.addEventListener('peer:disconnect', (connection) => {
+        console.log(`Disconnected from ${connection.remotePeer.toString()}`)
       })
     
       await node.start()
       return node
-
     }
+
+    app.provide('startLibP2p', startLibP2p)
   }
 }
 
