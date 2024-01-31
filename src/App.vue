@@ -1,19 +1,13 @@
+<script setup lang="ts">
+import IpfsInfo from "./components/IpfsInfo.vue";
+</script>
+
 <template>
   <div id="app">
-    <ipfs-info />
+    <img id="libp2p-logo" alt="IPFS logo" src="./assets/libp2p-logo.png" />
+    <IpfsInfo />
   </div>
 </template>
-
-<script>
-import IpfsInfo from "./components/IpfsInfo.vue";
-
-export default {
-  name: "app",
-  components: {
-    IpfsInfo
-  }
-};
-</script>
 
 <style>
 body {
@@ -21,6 +15,7 @@ body {
 }
 #app {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100vh;
@@ -28,5 +23,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
+}
+#libp2p-logo {
+  height: 10rem;
+  margin: 24px;
 }
 </style>

@@ -1,58 +1,64 @@
+<script setup lang="ts">
+import { ref, inject, onMounted } from "vue";
+import { Libp2p, PubSub, Message, PeerId } from "@libp2p/interface";
+import { fromString, toString } from "uint8arrays";
+
+const messagesRef = ref<HTMLElement | null>(null);
+const status = ref<string>("Connecting to Relay...");
+const id = ref<string>("");
+const message = ref<string>("");
+const peer = ref<string>("");
+const messages = ref<string[]>([]);
+
+const startLibP2p = inject("startLibP2p") as () => Promise<Libp2p>;
+const libp2p = ref<Libp2p | null>(null);
+const pubsub = ref<PubSub | null>(null);
+
+onMounted(async () => {
+  libp2p.value = await startLibP2p();
+  pubsub.value = libp2p.value.services.pubsub as PubSub;
+  const topic = "ourRoom";
+  pubsub.value.subscribe(topic);
+  status.value = "Relay connected.";
+  id.value = libp2p.value.peerId.toString();
+  pubsub.value.addEventListener("message", (event: CustomEvent<Message>) => {
+    const topic = event.detail.topic;
+    if (topic == "_peer-discovery._p2p._pubsub") return;
+    messages.value.push(toString(event.detail.data));
+    if (messagesRef.value)
+      messagesRef.value.scrollTop = messagesRef.value.scrollHeight;
+  });
+});
+
+const sendMessage = async () => {
+  if (!pubsub.value) return;
+  await pubsub.value.publish("ourRoom", fromString(message.value));
+  message.value = "";
+};
+</script>
+
 <template>
   <div class="ipfs-info">
-    <img class="ipfs-logo" alt="IPFS logo" src="../assets/logo.svg" />
     <form v-on:submit.prevent="sendMessage">
-      <div id="messages" class="messages">
-        <p v-for="(m,idx) in messages" :key="idx">{{ m }}</p>
+      <div id="messages" ref="messagesRef" class="messages">
+        <p v-for="(m, idx) in messages" :key="idx">{{ m }}</p>
       </div>
-      <input size="50" v-model="message" placeholder="Write something and press enter."/><br>
-      <input size="50" v-model="peer" placeholder="Fill target Peer for direct message."/>
-      <input type="submit">
+      <input
+        size="50"
+        v-model="message"
+        placeholder="Write something and press enter."
+      /><br />
+      <input
+        size="50"
+        v-model="peer"
+        placeholder="Fill target Peer for direct message."
+      />
+      <input type="submit" />
     </form>
     <h4>{{ status }}</h4>
     <h5>ID: {{ id }}</h5>
   </div>
 </template>
-
-<script>
-import { pipe } from 'it-pipe'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { inject } from 'vue'
-
-export default {
-  name: "IpfsInfo",
-  data: function() {
-    return {
-      status: "Connecting to IPFS...",
-      id: "",
-      message: "",
-      peer: "",
-      messages: [],
-      libp2p: {}
-    };
-  },
-  mounted: function() {
-    this.startPubsub();
-  },
-  methods: {
-    async startPubsub() {
-      this.libp2p = await inject('startLibP2p')();
-      window.libp2p = this.libp2p
-      this.id = await createEd25519PeerId()
-      console.log(this.id.toString())
-      this.libp2p.pubsub.addEventListener('message', (message) => {
-        this.messages.push(`${message.detail.topic}:`, new TextDecoder().decode(message.detail.data));
-        var elem = document.getElementById('messages');
-        elem.scrollTop = elem.scrollHeight;
-      })
-    },
-    sendMessage () {
-        this.libp2p.pubsub.publish('ourNews', new TextEncoder().encode('this.message'))
-        this.message = ''
-    }
-  }
-}
-</script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
@@ -70,5 +76,4 @@ export default {
 .messages p {
   max-width: 300px;
 }
-
 </style>
