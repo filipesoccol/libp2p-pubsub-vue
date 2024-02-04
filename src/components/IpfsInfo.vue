@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, inject, onMounted } from "vue";
-import { Libp2p, PubSub, Message, PeerId } from "@libp2p/interface";
+import { Libp2p, PubSub, Message } from "@libp2p/interface";
 import { fromString, toString } from "uint8arrays";
 
 const messagesRef = ref<HTMLElement | null>(null);

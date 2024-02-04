@@ -1,36 +1,40 @@
 {
   "name": "libp2p-pubsub-vue",
+  "homepage": "https://filipesoccol.github.io/libp2p-pubsub-vue/",
   "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "build": "vue-tsc --skipLibCheck && vite build",
+    "preview": "vite preview",
+    "deploy": "vite build && gh-pages -d dist"
   },
   "dependencies": {
-    "@chainsafe/libp2p-gossipsub": "^11.0.0",
-    "@chainsafe/libp2p-noise": "^14.0.0",
+    "@chainsafe/libp2p-gossipsub": "^11.2.0",
+    "@chainsafe/libp2p-noise": "^15.0.0",
     "@chainsafe/libp2p-yamux": "^6.0.1",
     "@libp2p/bootstrap": "^10.0.13",
-    "@libp2p/circuit-relay-v2": "^1.0.4",
-    "@libp2p/dcutr": "^1.0.3",
-    "@libp2p/identify": "^1.0.3",
-    "@libp2p/mplex": "^10.0.4",
+    "@libp2p/circuit-relay-v2": "^1.0.13",
+    "@libp2p/dcutr": "^1.0.10",
+    "@libp2p/floodsub": "^9.0.9",
+    "@libp2p/identify": "^1.0.12",
+    "@libp2p/mplex": "^10.0.13",
     "@libp2p/peer-id-factory": "^4.0.5",
     "@libp2p/pubsub-peer-discovery": "^10.0.2",
-    "@libp2p/webrtc": "^4.0.5",
-    "@libp2p/websockets": "^8.0.4",
-    "@multiformats/multiaddr": "^12.1.11",
-    "libp2p": "^1.0.8",
-    "vue": "^3.3.11"
+    "@libp2p/tcp": "^9.0.13",
+    "@libp2p/webrtc": "^4.0.17",
+    "@libp2p/websockets": "^8.0.13",
+    "@multiformats/multiaddr": "^12.1.14",
+    "libp2p": "^1.2.1",
+    "vue": "^3.4.15"
   },
   "devDependencies": {
-    "gh-pages": "^5.0.0",
-    "@vitejs/plugin-vue": "^4.5.2",
-    "typescript": "^5.2.2",
-    "vite": "^5.0.8",
-    "vue-tsc": "^1.8.25"
+    "@vitejs/plugin-vue": "^5.0.3",
+    "gh-pages": "^6.1.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vue-tsc": "^1.8.27"
   },
   "eslintConfig": {
     "root": true,

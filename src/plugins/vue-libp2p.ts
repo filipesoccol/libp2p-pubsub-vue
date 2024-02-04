@@ -59,8 +59,8 @@ const plugin = {
           pubsubPeerDiscovery()
         ],
         services: {
-          identify: identify(),
           pubsub: gossipsub(),
+          identify: identify(),
           dcutr: dcutr()
         },
         connectionManager: {
